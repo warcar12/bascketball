@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basket Ball Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+#start-screen, #game-area {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+    width: 100vw;  /* Full viewport width */
+}
+
+#start-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#game-name {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+#coin-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.coin-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+
+#game-area {
+    position: relative;
+    width: 320px; /* Full viewport width */
+    height: 500px; /* Full viewport height */
+    border: 1px solid #000;
+    overflow: hidden;
+    background: url('https://i.pinimg.com/originals/a3/e4/3d/a3e43d15fcb0998fda61afba83036f1e.jpg') no-repeat center center;
+    background-size: cover; /* Ensures the image covers the entire area */
+}
+
+#game-area::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 320px;
+    height: 500px;
+    background: rgba(0, 0, 0, 0.5); /* Dark overlay with 50% opacity */
+    z-index: 1; /* Ensures the overlay is above the background but below other content */
+}
+#ball {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    z-index: 2;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#basket {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    bottom: 0;
+    z-index: 2;
+}
+
+#score-board {
+    margin: 10px;
+    z-index: 2;
+}
+
+.lives {
+    margin-top: 10px;
+    z-index: 2;
+}
+
+.life-icon {
+    width: 30px;
+    height: 30px;
+    display: inline;
+}
+
+#game-over-message {
+    font-size: 1.5rem;
+    color: red;
+    z-index: 2;
+}
+/* Add this to your CSS file */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; 
+    background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.4); 
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; 
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.item-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.item img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+    </style>
+</head>
+<body>
+    <div id="start-screen">
+        <h1 id="game-name">Basket Ball Game</h1>
+        <div id="coin-info">
+            <img src="https://static.vecteezy.com/system/resources/previews/010/833/923/non_2x/gold-dollar-coin-game-asset-2d-icon-transparent-background-png.png" alt="Coin" class="coin-icon">
+            <span id="coin-count">0</span>
+        </div>
+        <button id="play-button">Play</button>
+        <button id="buy-ball-button">Buy Ball</button>
+        <!-- <button id="buy-basket-button">Buy Basket</button> -->
+    </div>
+<!-- Modal for buying balls -->
+<div id="buy-ball-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('buy-ball-modal')">&times;</span>
+        <h2>Select a Ball</h2>
+        <div class="item-list" id="ball-list">
+            <div class="item" onclick="selectItem('ball', 1, 0)">
+                <img src="https://static.vecteezy.com/system/resources/previews/036/709/833/non_2x/basketball-ball-on-transparent-background-png.png" alt="Ball 1">
+                <p>BALL - free</p>
+            </div>
+            <div class="item" onclick="selectItem('ball', 2, 100)">
+                <img src="https://static.vecteezy.com/system/resources/previews/047/467/997/non_2x/football-red-ball-isolated-on-transparent-background-png.png" alt="Ball 1">
+                <p>RED SOCCER BALL - 100 Coins (increase coin by 2)</p>
+            </div>
+            <div class="item" onclick="selectItem('ball', 3, 500)">
+                <img src="https://static.vecteezy.com/system/resources/previews/047/468/016/non_2x/football-gold-ball-isolated-on-transparent-background-png.png" alt="Ball 2">
+                <p>GOLDEN SOCCER BALL - 500 Coins (increase coin by 4)</p>
+            </div>
+            
+            <div class="item" onclick="selectItem('ball', 4, 1000)">
+                <img src="https://pngpix.com/images/thumbnail/abstract-basketball-art-png-04302024-mvd2m6zhzm58lik8.jpg" alt="Ball 2">
+                <p>ABSTRACT BASKET BALL - 1000 Coins (increase coin by 8)</p>
+            </div>
+            <div class="item" onclick="selectItem('ball', 5, 2500)">
+                <img src="https://pngfre.com/wp-content/uploads/basketball-png-image-pngfre-7.png" alt="Ball 2">
+                <p>LEOPARD BASKET BALL - 2500 Coins (increase coin by 16)</p>
+            </div>
+            <div class="item" onclick="selectItem('ball', 6, 5000)">
+                <img src="https://pngpix.com/images/thumbnail/black-leather-basketball-png-06252024-9rqt9byl4ccp7gmw.jpg" alt="Ball 2">
+                <p>BLACK BASKET BALL - 5000 Coins (increase coin by 32)</p>
+            </div>
+            <div class="item" onclick="selectItem('ball', 7, 11000)">
+                <img src="https://png.pngtree.com/png-clipart/20231121/original/pngtree-realistic-colorful-basketball-isolated-on-transparent-background-png-image_13671532.png" alt="Ball 2">
+                <p>BLUE BASKET BALL - 11000 Coins (increase coin by 64)</p>
+            </div>
+            <div class="item" onclick="selectItem('ball', 8, 23000)">
+                <img src="https://png.pngtree.com/png-vector/20231119/ourmid/pngtree-realistic-colorful-basketball-isolated-on-transparent-background-png-image_10641426.png" alt="Ball 2">
+                <p>ORANGE BASKET BALL - 23000 Coins (increase coin by 128)</p>
+            </div>
+            <div class="item" onclick="selectItem('ball', 9, 47000)">
+                <img src="https://pngfre.com/wp-content/uploads/basketball-png-image-pngfre-2.png" alt="Ball 2">
+                <p>KAUNGI BASKET BALL - 47000 Coins (increase coin by 256)</p>
+            </div>
+            <div class="item" onclick="selectItem('ball', 10, 95000)">
+                <img src="https://pngfre.com/wp-content/uploads/basketball-png-image-pngfre-27.png" alt="Ball 2">
+                <p>DOMINATE BASKET BALL - 95000 Coins (increase coin by 512)</p>
+            </div>
+            <div class="item" onclick="selectItem('ball', 11, 200000)">
+                <img src="https://static.vecteezy.com/system/resources/thumbnails/035/656/195/small_2x/ai-generated-basketball-ball-gold-isolated-on-transparent-background-png.png" alt="Ball 2">
+                <p>GOLDEN BASKET BALL - 200000 Coins (increase coin by 1024)</p>
+            </div>
+            <!-- Add more items as needed -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal for buying baskets -->
+<!-- <div id="buy-basket-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('buy-basket-modal')">&times;</span>
+        <h2>Select a Basket</h2>
+        <div class="item-list" id="basket-list">
+            <div class="item" onclick="selectItem('basket', 1, 20)">
+                <img src="https://www.kindpng.com/picc/m/457-4577007_krazy-netz-gold-basketball-net-basketball-net-png.png" alt="Basket 1">
+                <p>Basket 1 - 20 Coins</p>
+            </div>
+            <div class="item" onclick="selectItem('basket', 2, 30)">
+                <img src="path_to_basket_image2.jpg" alt="Basket 2">
+                <p>Basket 2 - 30 Coins</p>
+            </div>
+            <!-- Add more items as needed 
+        </div>
+    </div>
+</div> -->
+
+
+
+    <div id="game-area" style="display: none;">
+        <img id="basket" src="https://static.vecteezy.com/system/resources/previews/044/858/139/non_2x/basketball-hoops-on-isolated-transparent-background-free-png.png" alt="Basket">  <!-- Update path if needed -->
+        <img id="ball" src="https://static.vecteezy.com/system/resources/previews/036/709/833/non_2x/basketball-ball-on-transparent-background-png.png" alt="Ball">  <!-- Update path if needed -->
+        
+        <div id="score-board">
+            <div id="score">Score: 0</div>
+            <div id="high-score">High Score: <span id="high-score-value">0</span></div>
+        </div>
+        <div id="game-over-message" style="display: none;"></div>
+        <div id="lives">
+            <img src="https://www.pngall.com/wp-content/uploads/15/Minecraft-Heart-PNG-File.png" alt="Life" class="life-icon">
+            <img src="https://www.pngall.com/wp-content/uploads/15/Minecraft-Heart-PNG-File.png" alt="Life" class="life-icon">
+            <img src="https://www.pngall.com/wp-content/uploads/15/Minecraft-Heart-PNG-File.png" alt="Life" class="life-icon">
+        </div>
+        <div id="basket"></div>
+        <div id="ball"></div>
+    </div>
+    
+    <script src="scripts.js">
+let selectedBall = null;
+let selectedBasket = null;
+const ballData = {
+    1: { coinIncreaseRate: 1 },  
+    2: { coinIncreaseRate: 2 },  
+    3: { coinIncreaseRate: 4 }, 
+    4: { coinIncreaseRate: 8 }, 
+    5: { coinIncreaseRate: 16 }, 
+    6: { coinIncreaseRate: 32 }, 
+    7: { coinIncreaseRate: 64 }, 
+    8: { coinIncreaseRate: 128 }, 
+    9: { coinIncreaseRate: 256 }, 
+    10: { coinIncreaseRate: 512 }, 
+    11: { coinIncreaseRate: 1024 }, 
+    // Add more balls as needed...
+};
+
+// Function to handle item selection
+function selectItem(type, itemId, price) {
+    if (coins >= price || localStorage.getItem(`${type}-${itemId}`) === 'purchased') {
+        // Mark item as purchased if it's not already
+        if (!localStorage.getItem(`${type}-${itemId}`)) {
+            coins -= price;
+            coinCountDisplay.textContent = coins;
+            localStorage.setItem('coins', coins);  // Save updated coin count
+            localStorage.setItem(`${type}-${itemId}`, 'purchased');  // Mark item as purchased
+            alert(`${type.charAt(0).toUpperCase() + type.slice(1)} purchased!`);
+        }
+
+        // Highlight the selected item
+        if (type === 'ball') {
+            selectedBall = itemId;
+            highlightSelected('ball-list', itemId);
+        } else if (type === 'basket') {
+            selectedBasket = itemId;
+            highlightSelected('basket-list', itemId);
+        }
+
+        // Save the selected item
+        localStorage.setItem(`selected-${type}`, itemId);
+        closeModal(type === 'ball' ? 'buy-ball-modal' : 'buy-basket-modal');
+    } else {
+        alert('Not enough coins!');
+    }
+}
+
+// Function to highlight the selected item with a green border
+function highlightSelected(listId, itemId) {
+    const itemList = document.getElementById(listId).children;
+
+    for (let item of itemList) {
+        item.style.border = 'none';  // Remove the border from all items
+    }
+
+    itemList[itemId - 1].style.border = '2px solid green';  // Add green border to the selected item
+}
+let currentCoinIncreaseRate = 1;
+// Function to use selected ball and basket in game
+function useSelectedItems() {
+    let selectedBallId = localStorage.getItem('selected-ball');
+    
+    if (selectedBallId) {
+        let ballImage = document.querySelector(`#ball-list .item:nth-child(${selectedBallId}) img`).src;
+        document.getElementById('ball').src = ballImage;
+        
+        // Set the coin increase rate based on the selected ball
+        currentCoinIncreaseRate = ballData[selectedBallId].coinIncreaseRate;
+    }
+}
+
+
+// Call useSelectedItems when the game starts
+
+
+// Event listeners for buying balls and baskets
+document.getElementById('buy-ball-button').addEventListener('click', () => {
+    openModal('buy-ball-modal');
+    loadPurchasedItems('ball-list', 'ball');
+});
+
+// document.getElementById('buy-basket-button').addEventListener('click', () => {
+//     openModal('buy-basket-modal');
+//     loadPurchasedItems('basket-list', 'basket');
+// });
+
+// Function to load purchased items from localStorage and highlight selected ones
+function loadPurchasedItems(listId, type) {
+    const itemList = document.getElementById(listId).children;
+    for (let i = 0; i < itemList.length; i++) {
+        const itemId = i + 1;
+        const isPurchased = localStorage.getItem(`${type}-${itemId}`) === 'purchased';
+
+        if (isPurchased) {
+            itemList[i].style.opacity = 1;  // Make purchased items fully visible
+        } else {
+            itemList[i].style.opacity = 0.5;  // Make non-purchased items semi-transparent
+        }
+
+        // Highlight the currently selected item
+        const selectedItem = localStorage.getItem(`selected-${type}`);
+        if (selectedItem && selectedItem == itemId) {
+            highlightSelected(listId, itemId);
+        }
+    }
+}
+
+let basket = document.getElementById('basket');
+let ball = document.getElementById('ball');
+let scoreDisplay = document.getElementById('score');
+let highScoreDisplay = document.getElementById('high-score-value');
+let livesIcons = document.querySelectorAll('.life-icon');
+let coinCountDisplay = document.getElementById('coin-count');
+let score = 0;
+let highScore = 0;
+let lives = 3;
+let ballInterval;
+let isDragging = false;
+let mouseOffsetX = 0;
+let ballSpeed = 5;
+let speedIncreaseInterval = 5000;
+let speedIncrement = 0.5;
+let coins = parseInt(localStorage.getItem('coins')) || 0; // Initialize from localStorage or default to 100
+
+// Initialize touch positions
+let touchStartX = 0;
+let touchCurrentX = 0;
+
+// Function to handle touch start
+function handleTouchStart(event) {
+    if (event.touches.length === 1) { // Only handle single touch
+        touchStartX = event.touches[0].clientX;
+    }
+}
+
+// Function to handle touch move
+function handleTouchMove(event) {
+    if (event.touches.length === 1) { // Only handle single touch
+        touchCurrentX = event.touches[0].clientX;
+        moveBasketByTouch();
+    }
+}
+
+// Function to move basket based on touch input
+function moveBasketByTouch() {
+    let basketPosition = basket.offsetLeft;
+    let touchDeltaX = touchCurrentX - touchStartX;
+
+    // Update basket position based on touch movement
+    basket.style.left = Math.min(Math.max(basketPosition + touchDeltaX, 0), 270) + 'px';
+
+    // Update touch start position for next move event
+    touchStartX = touchCurrentX;
+}
+
+// Add touch event listeners
+document.addEventListener('touchstart', handleTouchStart);
+document.addEventListener('touchmove', handleTouchMove);
+
+// Function to initialize the game
+function initializeGame() {
+    highScore = parseInt(localStorage.getItem('highScore')) || 0;
+    coins = parseInt(localStorage.getItem('coins')) || 0; // Retrieve coins from localStorage
+    highScoreDisplay.textContent = highScore;
+    coinCountDisplay.textContent = coins;
+
+    // Show the start screen
+    document.getElementById('start-screen').style.display = 'flex';
+    document.getElementById('game-area').style.display = 'none';
+}
+// Function to open the modal
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'block';
+}
+
+// Function to close the modal
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+
+
+// Function to start the game
+function startGame() {
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('game-area').style.display = 'block';
+
+    score = 0;
+    lives = 3;
+    ballSpeed = 5;
+    scoreDisplay.textContent = score;
+
+    livesIcons.forEach((icon, index) => {
+        icon.style.display = index < lives ? 'inline' : 'none';
+    });
+
+    resetBall();
+    ballInterval = setInterval(moveBall, 20);
+    setInterval(increaseSpeed, speedIncreaseInterval);
+}
+
+// Function to move the ball down
+function moveBall() {
+    let ballRect = ball.getBoundingClientRect();
+    let gameAreaRect = document.getElementById('game-area').getBoundingClientRect();
+    let ballTop = ballRect.top - gameAreaRect.top;
+
+    if (ballTop >= 470) {
+        checkCatch();
+        resetBall();
+    } else {
+        ball.style.top = (ballTop + ballSpeed) + 'px';
+    }
+}
+
+// Function to reset ball to top with a random horizontal position
+function resetBall() {
+    ball.style.top = '0px';
+    ball.style.left = Math.random() * (300 - 20) + 'px';
+}
+
+// Function to check if the basket caught the ball
+function checkCatch() {
+    let basketRect = basket.getBoundingClientRect();
+    let ballRect = ball.getBoundingClientRect();
+
+    if (ballRect.left < basketRect.right && ballRect.right > basketRect.left) {
+        score++;
+        
+        // Add coins based on the selected ball's coinIncreaseRate
+        coins += currentCoinIncreaseRate;  
+        scoreDisplay.textContent = score;
+        coinCountDisplay.textContent = coins;
+
+        if (score > highScore) {
+            highScore = score;
+            highScoreDisplay.textContent = highScore;
+            localStorage.setItem('highScore', highScore);
+        }
+        localStorage.setItem('coins', coins);  // Save updated coin count
+    } else {
+        lives--;
+        livesIcons.forEach((icon, index) => {
+            icon.style.display = index < lives ? 'inline' : 'none';
+        });
+
+        if (lives <= 0) {
+            endGame();
+        }
+    }
+}
+
+
+// Function to end the game
+function endGame() {
+    clearInterval(ballInterval);
+
+    let gameOverMessage = `Game Over! Your score is: ${score}. Do you want to play again?`;
+    if (confirm(gameOverMessage)) {
+        initializeGame();
+    } else {
+        initializeGame();
+    }
+}
+
+// Function to reset the game
+function resetGame() {
+    score = 0;
+    lives = 3;
+    ballSpeed = 5;
+    scoreDisplay.textContent = score;
+    livesIcons.forEach(icon => {
+        icon.style.display = 'inline';
+    });
+
+    resetBall();
+    ballInterval = setInterval(moveBall, 20);
+    setInterval(increaseSpeed, speedIncreaseInterval);
+}
+
+// Function to gradually increase the ball's speed
+function increaseSpeed() {
+    ballSpeed += speedIncrement;
+}
+
+document.getElementById('play-button').addEventListener('click', () => {
+    useSelectedItems();
+    startGame();
+});
+
+// Event listener for buy ball button
+
+
+// Event listener for arrow keys (for desktop)
+document.addEventListener('keydown', (event) => {
+    let basketPosition = basket.offsetLeft;
+
+    if (event.key === 'ArrowLeft' && basketPosition > 0) {
+        basket.style.left = basketPosition - 20 + 'px';  // Move left
+    }
+
+    if (event.key === 'ArrowRight' && basketPosition < 270) {  // Adjusted for smaller basket size
+        basket.style.left = basketPosition + 20 + 'px';  // Move right
+    }
+});
+
+// Event listener for mouse scroll (for PC)
+document.addEventListener('wheel', (event) => {
+    let basketPosition = basket.offsetLeft;
+
+    if (event.deltaY < 0 && basketPosition < 270) {  // Scroll up (move right)
+        basket.style.left = basketPosition + 20 + 'px';
+    }
+
+    if (event.deltaY > 0 && basketPosition > 0) {  // Scroll down (move left)
+        basket.style.left = basketPosition - 20 + 'px';
+    }
+});
+
+// Mouse drag functionality
+basket.addEventListener('mousedown', (event) => {
+    isDragging = true;
+    mouseOffsetX = event.clientX - basket.offsetLeft;
+});
+
+document.addEventListener('mousemove', (event) => {
+    if (isDragging) {
+        let basketPosition = event.clientX - mouseOffsetX;
+
+        if (basketPosition >= 0 && basketPosition <= 270) {
+            basket.style.left = basketPosition + 'px';
+        }
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    isDragging = false;
+});
+
+// Initialize the game when the page loads
+window.onload = initializeGame;
+
+    </script>
+</body>
+</html>
